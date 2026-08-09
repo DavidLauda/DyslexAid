@@ -63,8 +63,18 @@ class OcrService {
       }
     }
 
+    if (allLines.isEmpty) return "";
+
     bool isSideways = sidewaysLines > uprightLines;
-    double tolerance = 25.0;
+    
+    double totalThickness = 0;
+    for (var line in allLines) {
+      totalThickness += isSideways ? line.boundingBox.width : line.boundingBox.height;
+    }
+    double avgThickness = totalThickness / allLines.length;
+    // Gunakan setengah dari ketebalan rata-rata baris sebagai toleransi, 
+    // daripada nilai statis (25.0) yang mengacaukan teks berukuran kecil.
+    double tolerance = avgThickness * 0.5;
 
     if (isSideways) {
       if (deviceOrientation == 1) { // Landscape Kiri (Teks dari Kanan ke Kiri gambar)
@@ -98,8 +108,56 @@ class OcrService {
       });
     }
 
-    List<String> filteredText = allLines.map((l) => l.text).toList();
-    return filteredText.join('\n');
+    StringBuffer result = StringBuffer();
+    for (int i = 0; i < allLines.length; i++) {
+      String text = allLines[i].text.trim();
+      
+      if (i == allLines.length - 1) {
+        result.write(text);
+        break;
+      }
+      
+      TextLine current = allLines[i];
+      TextLine next = allLines[i + 1];
+      
+      bool isSameLine;
+      double diff;
+      double currentSize;
+      
+      if (isSideways) {
+        diff = (current.boundingBox.center.dx - next.boundingBox.center.dx).abs();
+        isSameLine = diff < tolerance;
+        currentSize = current.boundingBox.width; // Ketebalan baris untuk teks sideways
+      } else {
+        diff = (current.boundingBox.center.dy - next.boundingBox.center.dy).abs();
+        isSameLine = diff < tolerance;
+        currentSize = current.boundingBox.height; // Ketebalan baris untuk teks portrait
+      }
+      
+      if (isSameLine) {
+        // Berada di baris yang sama (misal terpisah kolom)
+        result.write('$text ');
+      } else {
+        // Pindah baris. Cek apakah ini paragraf baru atau masih paragraf yang sama
+        // Gunakan avgThickness (rata-rata tinggi teks) karena tinggi per-baris (currentSize) bisa sangat berfluktuasi 
+        // tergantung huruf di dalamnya (contoh: kata "use" sangat pendek dibanding "The").
+        bool isNewParagraph = diff > avgThickness * 1.5;
+        
+        if (isNewParagraph) {
+          result.write('$text\n\n');
+        } else {
+          // Masih paragraf yang sama
+          if (text.endsWith('-')) {
+            // Hapus tanda hubung (-) dan gabungkan ke kata di baris berikutnya tanpa spasi
+            result.write(text.substring(0, text.length - 1));
+          } else {
+            result.write('$text ');
+          }
+        }
+      }
+    }
+
+    return result.toString().trim();
   }
   
   void dispose() {

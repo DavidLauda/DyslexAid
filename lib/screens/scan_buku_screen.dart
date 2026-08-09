@@ -61,7 +61,7 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
       if (_cameras.isNotEmpty) {
         _controller = CameraController(
           _cameras[0],
-          ResolutionPreset.high,
+          ResolutionPreset.max, // Ditingkatkan ke max agar teks kecil/jauh tetap tajam saat di-scan
           enableAudio: false,
         );
         await _controller!.initialize();
