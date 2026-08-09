@@ -14,54 +14,62 @@ class OcrService {
     final inputImage = InputImage.fromFilePath(imagePath);
     final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);
     
-    if (shortEdgePercent == null || longEdgePercent == null) {
-      return recognizedText.text;
-    }
-
-    final bytes = await File(imagePath).readAsBytes();
-    final image = await decodeImageFromList(bytes);
-    final double imgW = image.width.toDouble();
-    final double imgH = image.height.toDouble();
-    
-    double cropW, cropH;
-    if (imgW < imgH) {
-      cropW = imgW * shortEdgePercent;
-      cropH = imgH * longEdgePercent;
-    } else {
-      cropW = imgW * longEdgePercent;
-      cropH = imgH * shortEdgePercent;
-    }
-    
-    final absoluteScanArea = Rect.fromCenter(
-      center: Offset(imgW / 2, imgH / 2),
-      width: cropW,
-      height: cropH,
-    );
-
     List<TextLine> allLines = [];
     int sidewaysLines = 0;
     int uprightLines = 0;
 
-    for (TextBlock block in recognizedText.blocks) {
-      final intersect = absoluteScanArea.intersect(block.boundingBox);
+    bool hasCropArea = shortEdgePercent != null && longEdgePercent != null;
+    Rect? absoluteScanArea;
+
+    if (hasCropArea) {
+      final bytes = await File(imagePath).readAsBytes();
+      final image = await decodeImageFromList(bytes);
+      final double imgW = image.width.toDouble();
+      final double imgH = image.height.toDouble();
       
-      if (intersect.width > 0 && intersect.height > 0) {
-        final intersectArea = intersect.width * intersect.height;
-        final blockArea = block.boundingBox.width * block.boundingBox.height;
+      double cropW, cropH;
+      if (imgW < imgH) {
+        cropW = imgW * shortEdgePercent!;
+        cropH = imgH * longEdgePercent!;
+      } else {
+        cropW = imgW * longEdgePercent!;
+        cropH = imgH * shortEdgePercent!;
+      }
+      
+      absoluteScanArea = Rect.fromCenter(
+        center: Offset(imgW / 2, imgH / 2),
+        width: cropW,
+        height: cropH,
+      );
+    }
+
+    for (TextBlock block in recognizedText.blocks) {
+      bool isInsideCrop = true;
+
+      if (hasCropArea && absoluteScanArea != null) {
+        final intersect = absoluteScanArea.intersect(block.boundingBox);
+        if (intersect.width > 0 && intersect.height > 0) {
+          final intersectArea = intersect.width * intersect.height;
+          final blockArea = block.boundingBox.width * block.boundingBox.height;
+          isInsideCrop = intersectArea > blockArea * 0.5;
+        } else {
+          isInsideCrop = false;
+        }
+      }
+      
+      if (isInsideCrop) {
+        allLines.addAll(block.lines);
         
-        if (intersectArea > blockArea * 0.5) {
-          allLines.addAll(block.lines);
-          
-          for (TextLine line in block.lines) {
-            if (line.boundingBox.height > line.boundingBox.width * 1.2) {
-              sidewaysLines++;
-            } else if (line.boundingBox.width > line.boundingBox.height * 1.2) {
-              uprightLines++;
-            }
+        for (TextLine line in block.lines) {
+          if (line.boundingBox.height > line.boundingBox.width * 1.2) {
+            sidewaysLines++;
+          } else if (line.boundingBox.width > line.boundingBox.height * 1.2) {
+            uprightLines++;
           }
         }
       }
     }
+
 
     if (allLines.isEmpty) return "";
 

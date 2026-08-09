@@ -4,13 +4,30 @@ import 'screens/beranda_screen.dart';
 import 'screens/kamus_kata_screen.dart';
 import 'screens/riwayat_screen.dart';
 
-void main() {
+import 'package:provider/provider.dart';
+import 'services/vocab_service.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  final vocabService = VocabService();
+  try {
+    await vocabService.loadDataset();
+  } catch (e) {
+    debugPrint("Gagal memuat dataset KBBI: $e");
+    // Tetap lanjut runApp() dengan state kosong
+  }
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]).then((_) {
-    runApp(const DyslexAidApp());
+    runApp(
+      Provider<VocabService>.value(
+        value: vocabService,
+        child: const DyslexAidApp(),
+      ),
+    );
   });
 }
 
