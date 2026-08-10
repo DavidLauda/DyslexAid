@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/ocr_service.dart';
 import 'scan_buku_screen.dart';
-import 'ocr_result_screen.dart';
+import 'conversion_result_screen.dart';
 
 class BerandaScreen extends StatelessWidget {
   const BerandaScreen({super.key});
@@ -33,7 +33,10 @@ class BerandaScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => OcrResultScreen(extractedText: text),
+              builder: (context) => ConversionResultScreen(
+                imagePath: pickedFile.path,
+                recognizedText: text,
+              ),
             ),
           );
         }

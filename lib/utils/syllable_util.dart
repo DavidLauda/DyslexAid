@@ -3,45 +3,7 @@ class SyllableUtil {
     kata = kata.toLowerCase().trim();
     if (kata.isEmpty) return [];
     
-    // Helper untuk menghitung jumlah vokal (untuk menebak jumlah suku kata dasar)
-    int countVowels(String s) {
-      int c = 0;
-      String temp = s.replaceAll('ai', 'V').replaceAll('au', 'V').replaceAll('oi', 'V');
-      for (int i = 0; i < temp.length; i++) {
-        if ('aeiouV'.contains(temp[i])) c++;
-      }
-      return c;
-    }
-
     List<String> result = [];
-    String prefix = '';
-    String suffix = '';
-
-    // Tangani Akhiran (Suffix) dengan batasan stem minimal 2 suku kata
-    List<String> suffixes = ['kan', 'lah', 'kah', 'pun', 'nya'];
-    for (String s in suffixes) {
-      if (kata.endsWith(s)) {
-        String stem = kata.substring(0, kata.length - s.length);
-        if (countVowels(stem) >= 2) {
-          suffix = s;
-          kata = stem;
-          break; // hanya tangani 1 suffix
-        }
-      }
-    }
-
-    // Tangani Awalan (Prefix) dengan batasan stem minimal 2 suku kata (vokal)
-    List<String> prefixes = ['meng', 'peng', 'meny', 'peny', 'mem', 'pem', 'men', 'pen', 'ber', 'ter', 'per'];
-    for (String p in prefixes) {
-      if (kata.startsWith(p)) {
-        String stem = kata.substring(p.length);
-        if (countVowels(stem) >= 2) {
-          prefix = p;
-          kata = stem;
-          break; // hanya tangani 1 prefix
-        }
-      }
-    }
 
     // Proses kata/stem utama dengan algoritma V/K
     List<String> tokens = [];
@@ -100,10 +62,7 @@ class SyllableUtil {
       }
     }
 
-    if (prefix.isNotEmpty) result.add(prefix);
     result.addAll(vkSyllables);
-    if (suffix.isNotEmpty) result.add(suffix);
-
     return result;
   }
 }

@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../services/ocr_service.dart';
-import 'ocr_result_screen.dart';
+import 'conversion_result_screen.dart';
 
 class ScanBukuScreen extends StatefulWidget {
   const ScanBukuScreen({super.key});
@@ -166,7 +166,10 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => OcrResultScreen(extractedText: text),
+            builder: (context) => ConversionResultScreen(
+              imagePath: image.path,
+              recognizedText: text,
+            ),
           ),
         );
       }

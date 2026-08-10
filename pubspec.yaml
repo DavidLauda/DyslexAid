@@ -28,3 +28,17 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+  fonts:
+    - family: OpenDyslexic
+      fonts:
+        - asset: assets/fonts/opendyslexic-0.92/OpenDyslexic-Regular.otf
+        - asset: assets/fonts/opendyslexic-0.92/OpenDyslexic-Bold.otf
+          weight: 700
+        - asset: assets/fonts/opendyslexic-0.92/OpenDyslexic-Italic.otf
+          style: italic
+        - asset: assets/fonts/opendyslexic-0.92/OpenDyslexic-BoldItalic.otf
+          weight: 700
+          style: italic
+    - family: Lexend
+      fonts:
+        - asset: assets/fonts/Lexend/Lexend-VariableFont_wght.ttf
