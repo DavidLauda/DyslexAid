@@ -19,11 +19,15 @@ class ReadingHistory extends HiveObject {
   @HiveField(4)
   final List<String> kataBaruDitemukan;
 
+  @HiveField(5)
+  String? title;
+
   ReadingHistory({
     required this.id,
     this.thumbnailPath,
     required this.extractedText,
     required this.tanggalScan,
     required this.kataBaruDitemukan,
+    this.title,
   });
 }

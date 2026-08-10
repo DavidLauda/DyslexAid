@@ -54,23 +54,86 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final vocabService = Provider.of<VocabService>(context, listen: false);
+      final globalBox = Hive.box<List<String>>('global_box');
+      
+      // Ambil kata yang sudah pernah dipelajari sebelumnya
+      List<String> existingWordsList = globalBox.get('learned_words', defaultValue: <String>[]) ?? [];
+      Set<String> existingWordsSet = existingWordsList.toSet();
+
       setState(() {
-        _newWords = vocabService.ekstrakKataBaru(widget.recognizedText, {});
+        _newWords = vocabService.ekstrakKataBaru(widget.recognizedText, existingWordsSet);
       });
       
       // Simpan ke riwayat otomatis jika ini pemindaian baru
       if (!widget.isFromHistory) {
-        final box = Hive.box<ReadingHistory>('reading_history_box');
-        final history = ReadingHistory(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          thumbnailPath: widget.imagePath,
-          extractedText: widget.recognizedText,
-          tanggalScan: DateTime.now(),
-          kataBaruDitemukan: _newWords,
-        );
-        box.put(history.id, history);
+        // Tampilkan prompt judul buku terlebih dahulu sebelum menyimpan
+        _promptForTitleAndSave(existingWordsSet);
       }
     });
+  }
+
+  void _promptForTitleAndSave(Set<String> existingWordsSet) {
+    String defaultTitle = "Pemindaian ${DateTime.now().day.toString().padLeft(2, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().year}";
+    TextEditingController controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Wajib diisi agar tersimpan
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Beri Judul Bacaan', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: defaultTitle,
+              border: const OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Jika dilewati, gunakan default title
+                _saveToHistory(defaultTitle, existingWordsSet);
+                Navigator.pop(context);
+              },
+              child: const Text('Lewati', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              onPressed: () {
+                String title = controller.text.trim();
+                if (title.isEmpty) title = defaultTitle;
+                _saveToHistory(title, existingWordsSet);
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _saveToHistory(String title, Set<String> existingWordsSet) {
+    final globalBox = Hive.box<List<String>>('global_box');
+    
+    // Update global box (akumulasi kata lama + kata baru)
+    if (_newWords.isNotEmpty) {
+      existingWordsSet.addAll(_newWords);
+      globalBox.put('learned_words', existingWordsSet.toList());
+    }
+
+    final box = Hive.box<ReadingHistory>('reading_history_box');
+    final history = ReadingHistory(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      thumbnailPath: widget.imagePath,
+      extractedText: widget.recognizedText,
+      tanggalScan: DateTime.now(),
+      kataBaruDitemukan: _newWords,
+    );
+    box.put(history.id, history);
   }
 
   void _parseWordBoundaries() {

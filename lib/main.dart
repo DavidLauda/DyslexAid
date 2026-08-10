@@ -16,6 +16,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(ReadingHistoryAdapter());
   await Hive.openBox<ReadingHistory>('reading_history_box');
+  await Hive.openBox<List<String>>('global_box');
 
   final vocabService = VocabService();
   try {

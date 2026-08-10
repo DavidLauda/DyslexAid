@@ -22,13 +22,14 @@ class ReadingHistoryAdapter extends TypeAdapter<ReadingHistory> {
       extractedText: fields[2] as String,
       tanggalScan: fields[3] as DateTime,
       kataBaruDitemukan: (fields[4] as List).cast<String>(),
+      title: fields[5] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ReadingHistory obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class ReadingHistoryAdapter extends TypeAdapter<ReadingHistory> {
       ..writeByte(3)
       ..write(obj.tanggalScan)
       ..writeByte(4)
-      ..write(obj.kataBaruDitemukan);
+      ..write(obj.kataBaruDitemukan)
+      ..writeByte(5)
+      ..write(obj.title);
   }
 
   @override

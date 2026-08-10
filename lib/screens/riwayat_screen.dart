@@ -8,6 +8,71 @@ import 'scan_buku_screen.dart';
 class RiwayatScreen extends StatelessWidget {
   const RiwayatScreen({super.key});
 
+  void _editTitle(BuildContext context, ReadingHistory history) {
+    String defaultTitle = "Pemindaian ${_formatDate(history.tanggalScan)}";
+    TextEditingController controller = TextEditingController(
+      text: history.title ?? defaultTitle,
+    );
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Judul Buku', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: "Masukkan judul baru",
+              border: OutlineInputBorder(),
+            ),
+            maxLines: 3,
+            minLines: 1,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              onPressed: () {
+                history.title = controller.text.trim();
+                history.save(); // Simpan ke Hive
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteHistory(BuildContext context, ReadingHistory history) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Hapus Riwayat', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+          content: const Text('Apakah Anda yakin ingin menghapus buku ini dari riwayat? Data yang dihapus tidak bisa dikembalikan.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+              onPressed: () {
+                history.delete(); // Hapus dari Hive
+                Navigator.pop(context);
+              },
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,17 +197,38 @@ class RiwayatScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  _formatDate(history.tanggalScan),
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      _formatDate(history.tanggalScan),
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
+                                          constraints: const BoxConstraints(),
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          onPressed: () => _editTitle(context, history),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                                          constraints: const BoxConstraints(),
+                                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                                          onPressed: () => _deleteHistory(context, history),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 4),
                                 Text(
-                                  history.extractedText,
+                                  history.title ?? "Pemindaian ${_formatDate(history.tanggalScan)}",
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
