@@ -183,9 +183,12 @@ class RiwayatScreen extends StatelessWidget {
                             child: history.thumbnailPath != null && File(history.thumbnailPath!).existsSync()
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
-                                    child: Image.file(
-                                      File(history.thumbnailPath!),
-                                      fit: BoxFit.cover,
+                                    child: RotatedBox(
+                                      quarterTurns: history.rotation,
+                                      child: Image.file(
+                                        File(history.thumbnailPath!),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   )
                                 : const Icon(Icons.image_not_supported, color: Colors.grey),
@@ -269,6 +272,7 @@ class RiwayatScreen extends StatelessWidget {
                                   imagePath: history.thumbnailPath,
                                   recognizedText: history.extractedText,
                                   isFromHistory: true, // Jangan simpan ulang
+                                  initialRotation: history.rotation,
                                 ),
                               ),
                             );

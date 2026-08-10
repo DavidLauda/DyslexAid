@@ -169,6 +169,7 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
             builder: (context) => ConversionResultScreen(
               imagePath: image.path,
               recognizedText: text,
+              initialRotation: -_iconTurns,
             ),
           ),
         );

@@ -22,6 +22,9 @@ class ReadingHistory extends HiveObject {
   @HiveField(5)
   String? title;
 
+  @HiveField(6, defaultValue: 0)
+  int rotation;
+
   ReadingHistory({
     required this.id,
     this.thumbnailPath,
@@ -29,5 +32,6 @@ class ReadingHistory extends HiveObject {
     required this.tanggalScan,
     required this.kataBaruDitemukan,
     this.title,
+    this.rotation = 0,
   });
 }

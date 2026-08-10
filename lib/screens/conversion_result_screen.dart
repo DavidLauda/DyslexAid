@@ -21,12 +21,14 @@ class ConversionResultScreen extends StatefulWidget {
   final String? imagePath;
   final String recognizedText;
   final bool isFromHistory;
+  final int initialRotation;
 
   const ConversionResultScreen({
     super.key,
     this.imagePath,
     required this.recognizedText,
     this.isFromHistory = false,
+    this.initialRotation = 0,
   });
 
   @override
@@ -38,6 +40,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
   
   List<WordBoundary> _boundaries = [];
   int? _highlightedWordIndex;
+  final ValueNotifier<int?> _highlightNotifier = ValueNotifier<int?>(null);
   bool _isPlaying = false;
   
   double _speechRate = 0.5; // 0.5 di flutter_tts biasanya sama dengan 1.0x normal
@@ -132,6 +135,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
       extractedText: widget.recognizedText,
       tanggalScan: DateTime.now(),
       kataBaruDitemukan: _newWords,
+      rotation: widget.initialRotation,
     );
     box.put(history.id, history);
   }
@@ -161,6 +165,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
               _highlightedWordIndex = i;
               _currentBoundaryIndex = i;
             });
+            _highlightNotifier.value = i;
           }
           break;
         }
@@ -175,12 +180,14 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
         _currentBoundaryIndex = 0;
         _offsetShift = 0;
       });
+      _highlightNotifier.value = null;
     });
   }
 
   @override
   void dispose() {
     _flutterTts.stop();
+    _highlightNotifier.dispose();
     super.dispose();
   }
 
@@ -201,6 +208,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
         _isPlaying = true;
         _highlightedWordIndex = _currentBoundaryIndex;
       });
+      _highlightNotifier.value = _currentBoundaryIndex;
     }
   }
 
@@ -229,6 +237,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
         setState(() {
           _highlightedWordIndex = _currentBoundaryIndex;
         });
+        _highlightNotifier.value = _currentBoundaryIndex;
       }
     }
   }
@@ -241,6 +250,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
         setState(() {
           _highlightedWordIndex = _currentBoundaryIndex;
         });
+        _highlightNotifier.value = _currentBoundaryIndex;
       }
     }
   }
@@ -331,6 +341,68 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
     );
   }
 
+  void _showFullscreenPhoto() {
+    if (widget.imagePath == null) return;
+    
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "Tutup Foto",
+      barrierColor: Colors.black.withOpacity(0.9),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        int quarterTurns = widget.initialRotation;
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Scaffold(
+              backgroundColor: Colors.black,
+              body: Stack(
+                children: [
+                  // Fullscreen Image, takes up all space
+                  Positioned.fill(
+                    child: InteractiveViewer(
+                      child: Center(
+                        child: RotatedBox(
+                          quarterTurns: quarterTurns,
+                          child: Image.file(
+                            File(widget.imagePath!),
+                            fit: BoxFit.contain, 
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  // Top buttons
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    left: 8,
+                    child: IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ),
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    right: 8,
+                    child: IconButton(
+                      icon: const Icon(Icons.rotate_right, color: Colors.white, size: 30),
+                      onPressed: () {
+                        setDialogState(() {
+                          quarterTurns++;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+        },
+      );
+    },
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     // 0.5 == 1.0x. Jadi displayMultiplier = value * 2
@@ -387,13 +459,37 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (widget.imagePath != null) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.file(
-                      File(widget.imagePath!),
-                      height: 220,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
+                  GestureDetector(
+                    onTap: _showFullscreenPhoto,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            constraints: const BoxConstraints(maxHeight: 250),
+                            color: Colors.grey.shade300,
+                            child: RotatedBox(
+                              quarterTurns: widget.initialRotation,
+                              child: Image.file(
+                                File(widget.imagePath!),
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            constraints: const BoxConstraints(maxHeight: 250),
+                            width: double.infinity,
+                            color: Colors.black.withOpacity(0.2),
+                          ),
+                          const Icon(
+                            Icons.zoom_out_map,
+                            color: Colors.white,
+                            size: 48,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
