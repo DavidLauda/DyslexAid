@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:provider/provider.dart';
+import '../services/vocab_service.dart';
 import '../widgets/dyslexia_friendly_text.dart';
 
 class WordBoundary {
@@ -36,12 +38,21 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
   double _speechRate = 0.5; // 0.5 di flutter_tts biasanya sama dengan 1.0x normal
   int _currentBoundaryIndex = 0;
   int _offsetShift = 0;
+  
+  List<String> _newWords = [];
 
   @override
   void initState() {
     super.initState();
     _parseWordBoundaries();
     _initTts();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final vocabService = Provider.of<VocabService>(context, listen: false);
+      setState(() {
+        _newWords = vocabService.ekstrakKataBaru(widget.recognizedText, {});
+      });
+    });
   }
 
   void _parseWordBoundaries() {
@@ -165,6 +176,78 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
     }
   }
 
+  void _showNewWordsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                "Total ${_newWords.length} Kata yang bisa kamu pelajari dari gambar ini",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Lexend',
+                ),
+              ),
+              const SizedBox(height: 20),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: _newWords.map((word) {
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () {
+                            // Aksi saat chip ditekan (sementara tutup bottom sheet)
+                            Navigator.pop(context);
+                          },
+                          child: Ink(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.15),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                )
+                              ],
+                              border: Border.all(color: Colors.blue.shade200, width: 1.5),
+                            ),
+                            child: Text(
+                              word,
+                              style: TextStyle(
+                                color: Colors.blue.shade900,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // 0.5 == 1.0x. Jadi displayMultiplier = value * 2
@@ -182,6 +265,37 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
         centerTitle: true,
       ),
       backgroundColor: const Color(0xFFF4F4F9),
+      bottomNavigationBar: _newWords.isNotEmpty
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                border: Border(top: BorderSide(color: Colors.blue.shade200, width: 1)),
+              ),
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    const Icon(Icons.info_outline, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Ada ${_newWords.length} kata yang bisa dipelajari dari gambar ini",
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.blue),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: _showNewWordsBottomSheet,
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blue.shade100,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text("Lihat kata ->", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                    )
+                  ],
+                ),
+              ),
+            )
+          : null,
       body: Stack(
         children: [
           SingleChildScrollView(
