@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'models/reading_history.dart';
 import 'screens/beranda_screen.dart';
 import 'screens/kamus_kata_screen.dart';
 import 'screens/riwayat_screen.dart';
@@ -10,6 +12,11 @@ import 'services/vocab_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Inisialisasi Hive
+  await Hive.initFlutter();
+  Hive.registerAdapter(ReadingHistoryAdapter());
+  await Hive.openBox<ReadingHistory>('reading_history_box');
+
   final vocabService = VocabService();
   try {
     await vocabService.loadDataset();

@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
+import 'package:hive/hive.dart';
+import '../models/reading_history.dart';
 import '../services/vocab_service.dart';
 import '../widgets/dyslexia_friendly_text.dart';
 import '../widgets/detail_kata_overlay.dart';
@@ -18,11 +20,13 @@ class WordBoundary {
 class ConversionResultScreen extends StatefulWidget {
   final String? imagePath;
   final String recognizedText;
+  final bool isFromHistory;
 
   const ConversionResultScreen({
     super.key,
     this.imagePath,
     required this.recognizedText,
+    this.isFromHistory = false,
   });
 
   @override
@@ -53,6 +57,19 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
       setState(() {
         _newWords = vocabService.ekstrakKataBaru(widget.recognizedText, {});
       });
+      
+      // Simpan ke riwayat otomatis jika ini pemindaian baru
+      if (!widget.isFromHistory) {
+        final box = Hive.box<ReadingHistory>('reading_history_box');
+        final history = ReadingHistory(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          thumbnailPath: widget.imagePath,
+          extractedText: widget.recognizedText,
+          tanggalScan: DateTime.now(),
+          kataBaruDitemukan: _newWords,
+        );
+        box.put(history.id, history);
+      }
     });
   }
 
