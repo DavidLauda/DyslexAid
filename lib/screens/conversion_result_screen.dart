@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import '../services/vocab_service.dart';
 import '../widgets/dyslexia_friendly_text.dart';
+import '../widgets/detail_kata_overlay.dart';
 
 class WordBoundary {
   final int index;
@@ -209,8 +210,10 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(16),
                           onTap: () {
-                            // Aksi saat chip ditekan (sementara tutup bottom sheet)
+                            // Tutup bottom sheet daftar kata
                             Navigator.pop(context);
+                            // Tampilkan overlay Detail Kata
+                            DetailKataOverlay.show(context, word);
                           },
                           child: Ink(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
