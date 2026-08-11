@@ -48,7 +48,7 @@ class RiwayatScreen extends StatelessWidget {
               child: const Text('Batal', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Colors.white),
               onPressed: () {
                 history.title = controller.text.trim();
                 history.save(); // Simpan ke Hive
@@ -90,19 +90,21 @@ class RiwayatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Riwayat', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend')),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: const Text('Riwayat'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () => _showSettingsSheet(context),
           ),
         ],
+        backgroundColor: Colors.transparent,
       ),
-      backgroundColor: const Color(0xFFF4F4F9),
       body: ValueListenableBuilder(
         valueListenable: Hive.box<ReadingHistory>('reading_history_box').listenable(),
         builder: (context, Box<ReadingHistory> box, _) {
@@ -113,24 +115,24 @@ class RiwayatScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history_rounded, size: 80, color: Colors.grey.shade400),
+                    Icon(Icons.history_rounded, size: 80, color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
                     const SizedBox(height: 24),
-                    const Text(
+                    Text(
                       "Kamu belum pernah membaca satu buku pun",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey,
+                        color: isDark ? Colors.white54 : Colors.grey,
                       ),
                     ),
                     const SizedBox(height: 32),
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.camera_alt),
+                      icon: const Icon(Icons.document_scanner_rounded),
                       label: const Text("Mulai Baca Buku"),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        backgroundColor: Colors.teal,
+                        backgroundColor: colorScheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
@@ -170,8 +172,8 @@ class RiwayatScreen extends StatelessWidget {
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      foregroundColor: Colors.teal,
-                      side: const BorderSide(color: Colors.teal, width: 2),
+                      foregroundColor: colorScheme.primary,
+                      side: BorderSide(color: colorScheme.primary, width: 2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -182,10 +184,15 @@ class RiwayatScreen extends StatelessWidget {
               }
 
               final history = histories[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 2,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey.shade900 : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.04), blurRadius: 20, offset: const Offset(0, 10))
+                  ],
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -198,12 +205,12 @@ class RiwayatScreen extends StatelessWidget {
                             width: 80,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(12),
+                              color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: history.thumbnailPath != null && File(history.thumbnailPath!).existsSync()
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                     child: RotatedBox(
                                       quarterTurns: history.rotation,
                                       child: Image.file(
@@ -212,7 +219,7 @@ class RiwayatScreen extends StatelessWidget {
                                       ),
                                     ),
                                   )
-                                : const Icon(Icons.image_not_supported, color: Colors.grey),
+                                : Icon(Icons.image_not_supported, color: isDark ? Colors.grey.shade600 : Colors.grey),
                           ),
                           const SizedBox(width: 16),
                           
@@ -224,24 +231,27 @@ class RiwayatScreen extends StatelessWidget {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      _formatDate(history.tanggalScan),
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
+                                    Expanded(
+                                      child: Text(
+                                        _formatDate(history.tanggalScan),
+                                        style: TextStyle(
+                                          color: isDark ? Colors.white54 : Colors.grey.shade600,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                       ),
                                     ),
                                     Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         IconButton(
-                                          icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
+                                          icon: const Icon(Icons.edit_rounded, size: 20, color: Colors.blue),
                                           constraints: const BoxConstraints(),
                                           padding: const EdgeInsets.symmetric(horizontal: 4),
                                           onPressed: () => _editTitle(context, history),
                                         ),
                                         IconButton(
-                                          icon: const Icon(Icons.delete, size: 20, color: Colors.red),
+                                          icon: const Icon(Icons.delete_rounded, size: 20, color: Colors.red),
                                           constraints: const BoxConstraints(),
                                           padding: const EdgeInsets.symmetric(horizontal: 4),
                                           onPressed: () => _deleteHistory(context, history),
@@ -255,22 +265,23 @@ class RiwayatScreen extends StatelessWidget {
                                   history.title ?? "Pemindaian ${_formatDate(history.tanggalScan)}",
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
+                                    color: isDark ? Colors.white : Colors.black,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Colors.blue.shade50,
+                                    color: colorScheme.primary.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     "${history.kataBaruDitemukan.length} Kata Baru",
                                     style: TextStyle(
-                                      color: Colors.blue.shade700,
+                                      color: colorScheme.primary,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -299,8 +310,8 @@ class RiwayatScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal.shade50,
-                            foregroundColor: Colors.teal,
+                            backgroundColor: colorScheme.primary.withOpacity(0.1),
+                            foregroundColor: colorScheme.primary,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

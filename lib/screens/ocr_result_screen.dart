@@ -20,8 +20,8 @@ class OcrResultScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Debug Vocab Tracker'),
-        backgroundColor: Colors.teal,
+        title: const Text('OCR Debug Result'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -29,7 +29,7 @@ class OcrResultScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('1. RAW OCR TEXT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.teal)),
+            Text('1. RAW OCR TEXT', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.primary)),
             const SizedBox(height: 8),
             Text(
               extractedText.isEmpty ? 'Tidak ada teks terdeteksi.' : extractedText,
@@ -37,7 +37,7 @@ class OcrResultScreen extends StatelessWidget {
             ),
             const Divider(height: 32, thickness: 2),
 
-            const Text('2. UNIK TOKENS (RegExp)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.teal)),
+            Text('2. UNIK TOKENS (RegExp)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.primary)),
             const SizedBox(height: 8),
             Text(
               tokens.isEmpty ? 'Tidak ada token.' : tokens.join(', '),
@@ -45,7 +45,7 @@ class OcrResultScreen extends StatelessWidget {
             ),
             const Divider(height: 32, thickness: 2),
 
-            const Text('3. MATCHED KBBI (Kata Baru)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.teal)),
+            Text('3. MATCHED KBBI (Kata Baru)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Theme.of(context).colorScheme.primary)),
             const SizedBox(height: 8),
             Text(
               matchedWords.isEmpty ? 'Tidak ada kata yang cocok di KBBI.' : matchedWords.join(', '),

@@ -205,10 +205,13 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_isCameraInitialized || _controller == null) {
-      return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(child: CircularProgressIndicator(color: Colors.teal)),
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (_isCameraInitialized == false) {
+      return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator(color: colorScheme.primary)),
       );
     }
 
@@ -236,7 +239,7 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              border: Border.all(color: Colors.tealAccent, width: 2),
+                              border: Border.all(color: colorScheme.secondary, width: 2),
                             ),
                           ),
                         ),
@@ -260,7 +263,7 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
                   width: MediaQuery.of(context).size.width - 64,
                   height: MediaQuery.of(context).size.height * 0.6,
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.teal, width: 3),
+                    border: Border.all(color: colorScheme.primary, width: 3),
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
@@ -293,24 +296,24 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
               right: 0,
               child: Center(
                 child: _isProcessing 
-                  ? const CircularProgressIndicator(color: Colors.teal)
+                  ? CircularProgressIndicator(color: colorScheme.primary)
                   : GestureDetector(
                       onTap: _takePicture,
                       child: Container(
                         height: 80,
                         width: 80,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 4),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: colorScheme.secondary, width: 2),
                           color: Colors.white.withOpacity(0.3),
                         ),
                         child: Center(
                           child: Container(
                             height: 60,
                             width: 60,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white,
+                              color: colorScheme.primary,
                             ),
                           ),
                         ),
@@ -325,9 +328,18 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
                 right: 24,
                 child: FloatingActionButton.extended(
                   onPressed: _finishScanning,
-                  backgroundColor: Colors.teal,
-                  icon: const Icon(Icons.check, color: Colors.white),
-                  label: Text('Selesai (${_scannedTexts.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  backgroundColor: colorScheme.primary,
+                  label: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Colors.white,
+                        radius: 12,
+                        child: Icon(Icons.check, size: 16, color: colorScheme.primary),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('Selesai (${_scannedTexts.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
               ),
 

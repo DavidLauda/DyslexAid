@@ -9,7 +9,11 @@ class SettingsProvider extends ChangeNotifier {
   double _lineSpacing = 1.8;
   double _wordSpacing = 8.0;
   double _letterSpacing = 1.5;
-  int _themeColorIndex = 0;
+  int _themeColorIndex = 0; // Reading Theme
+  
+  // App Theme Settings
+  int _appThemeIndex = 0; // 0=Teal, 1=Ocean, 2=Sunset, 3=Lavender
+  bool _isAppDarkMode = false;
 
   SettingsProvider() {
     _init();
@@ -23,6 +27,8 @@ class SettingsProvider extends ChangeNotifier {
     _wordSpacing = _box.get('wordSpacing', defaultValue: 8.0);
     _letterSpacing = _box.get('letterSpacing', defaultValue: 1.5);
     _themeColorIndex = _box.get('themeColorIndex', defaultValue: 0);
+    _appThemeIndex = _box.get('appThemeIndex', defaultValue: 0);
+    _isAppDarkMode = _box.get('isAppDarkMode', defaultValue: false);
     notifyListeners();
   }
 
@@ -32,6 +38,9 @@ class SettingsProvider extends ChangeNotifier {
   double get wordSpacing => _wordSpacing;
   double get letterSpacing => _letterSpacing;
   int get themeColorIndex => _themeColorIndex;
+  
+  int get appThemeIndex => _appThemeIndex;
+  bool get isAppDarkMode => _isAppDarkMode;
 
   Color getThemeColor() {
     switch (_themeColorIndex) {
@@ -88,6 +97,18 @@ class SettingsProvider extends ChangeNotifier {
   void updateThemeColorIndex(int value) {
     _themeColorIndex = value;
     _box.put('themeColorIndex', value);
+    notifyListeners();
+  }
+
+  void updateAppThemeIndex(int value) {
+    _appThemeIndex = value;
+    _box.put('appThemeIndex', value);
+    notifyListeners();
+  }
+
+  void toggleAppDarkMode(bool value) {
+    _isAppDarkMode = value;
+    _box.put('isAppDarkMode', value);
     notifyListeners();
   }
 }

@@ -5,6 +5,7 @@ import '../services/vocab_service.dart';
 import '../widgets/detail_kata_overlay.dart';
 import '../widgets/text_settings_sheet.dart';
 import 'scan_buku_screen.dart';
+import '../widgets/glass_ui.dart';
 
 class KamusKataScreen extends StatefulWidget {
   const KamusKataScreen({super.key});
@@ -62,22 +63,24 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final vocabService = Provider.of<VocabService>(context, listen: false);
     final int totalWords = vocabService.kbbi.isNotEmpty ? vocabService.kbbi.length : 1;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Kamus Kata', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend')),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: const Text('Kamus Kata'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: _showSettingsSheet,
           ),
         ],
+        backgroundColor: Colors.transparent,
       ),
-      backgroundColor: const Color(0xFFF4F4F9),
       body: ValueListenableBuilder(
         valueListenable: Hive.box<List<String>>('global_box').listenable(keys: ['learned_words']),
         builder: (context, Box<List<String>> box, _) {
@@ -91,20 +94,35 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.menu_book_rounded, size: 80, color: Colors.grey.shade400),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey.shade900 : Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), blurRadius: 30, offset: const Offset(0, 10)),
+                        ],
+                      ),
+                      child: Icon(Icons.menu_book_rounded, size: 80, color: isDark ? Colors.grey.shade700 : Colors.grey.shade400),
+                    ),
                     const SizedBox(height: 24),
-                    const Text(
-                      "Kamu belum pernah mempelajari satu kata pun di aplikasi ini",
+                    Text(
+                      "Kamus Kata",
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Pusat kosakata baru yang telah kamu pelajari",
+                      style: TextStyle(fontSize: 16, color: isDark ? Colors.white70 : Colors.black54),
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey),
                     ),
                     const SizedBox(height: 32),
                     ElevatedButton.icon(
-                      icon: const Icon(Icons.camera_alt),
+                      icon: const Icon(Icons.document_scanner_rounded),
                       label: const Text("Scan Buku Sekarang"),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                        backgroundColor: Colors.teal,
+                        backgroundColor: colorScheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       ),
@@ -131,37 +149,34 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Panel Progress
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Progres Belajarmu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal.shade900)),
-                        Text("$percentage%", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal.shade700)),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 12,
-                        backgroundColor: Colors.grey.shade200,
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.teal),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: GlassCard(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text("Progres Belajarmu", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : colorScheme.primary)),
+                          Text("$percentage%", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : colorScheme.primary.withOpacity(0.8))),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text("$currentCount dari ${vocabService.kbbi.length} kata KBBI", style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500)),
-                  ],
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 12,
+                          backgroundColor: isDark ? Colors.grey.shade800 : Colors.white.withOpacity(0.5),
+                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text("$currentCount dari ${vocabService.kbbi.length} kata KBBI", style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
                 ),
               ),
               
@@ -177,8 +192,8 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
                       value: _sortOrder,
                       isDense: true,
                       underline: const SizedBox(),
-                      icon: const Icon(Icons.sort),
-                      style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+                      icon: Icon(Icons.sort_rounded, color: colorScheme.primary),
+                      style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold),
                       items: <String>['Terbaru', 'Terlama', 'A-Z', 'Z-A'].map((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
@@ -211,22 +226,28 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
                       children: displayedWords.map((word) {
                         return Material(
                           color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(16),
-                            onTap: () {
-                              DetailKataOverlay.show(context, word);
-                            },
-                            child: Ink(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(color: Colors.blue.withOpacity(0.15), blurRadius: 6, offset: const Offset(0, 3))
-                                ],
-                                border: Border.all(color: Colors.blue.shade200, width: 1.5),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.grey.shade900.withOpacity(0.9) : Colors.white.withOpacity(0.95),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.white, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(isDark ? 0.3 : 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () {
+                                DetailKataOverlay.show(context, word);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                child: Text(word, style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.bold, fontSize: 15)),
                               ),
-                              child: Text(word, style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.bold, fontSize: 16)),
                             ),
                           ),
                         );
@@ -238,41 +259,52 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
               
               // Pagination Controls
               if (totalPages > 1)
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(Icons.chevron_left),
-                        color: _currentPage > 1 ? Colors.teal : Colors.grey,
-                        onPressed: _currentPage > 1 ? () {
-                          setState(() {
-                            _currentPage--;
-                          });
-                        } : null,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                      decoration: BoxDecoration(
+                        color: (isDark ? Colors.grey.shade900 : Colors.white).withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(color: isDark ? Colors.grey.shade800 : Colors.white, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
                       ),
-                      Text("Hal $_currentPage / $totalPages", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                      IconButton(
-                        iconSize: 24,
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(Icons.chevron_right),
-                        color: _currentPage < totalPages ? Colors.teal : Colors.grey,
-                        onPressed: _currentPage < totalPages ? () {
-                          setState(() {
-                            _currentPage++;
-                          });
-                        } : null,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            iconSize: 18,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                            icon: const Icon(Icons.chevron_left_rounded),
+                            color: _currentPage > 1 ? colorScheme.primary : Colors.grey,
+                            onPressed: _currentPage > 1 ? () {
+                              setState(() {
+                                _currentPage--;
+                              });
+                            } : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Text("Hal $_currentPage / $totalPages", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: colorScheme.primary)),
+                          const SizedBox(width: 8),
+                          IconButton(
+                            iconSize: 18,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                            icon: const Icon(Icons.chevron_right_rounded),
+                            color: _currentPage < totalPages ? Theme.of(context).colorScheme.primary : (Theme.of(context).brightness == Brightness.dark ? Colors.white30 : Colors.grey),
+                            onPressed: _currentPage < totalPages ? () {
+                              setState(() {
+                                _currentPage++;
+                              });
+                            } : null,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
             ],

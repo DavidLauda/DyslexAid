@@ -4,6 +4,7 @@ import '../services/ocr_service.dart';
 import 'scan_buku_screen.dart';
 import 'conversion_result_screen.dart';
 import '../widgets/text_settings_sheet.dart';
+import '../widgets/glass_ui.dart';
 
 class BerandaScreen extends StatelessWidget {
   const BerandaScreen({super.key});
@@ -56,14 +57,16 @@ class BerandaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: const Text('Beranda'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_rounded),
             onPressed: () {
               showModalBottomSheet(
                 context: context,
@@ -79,54 +82,100 @@ class BerandaScreen extends StatelessWidget {
             },
           ),
         ],
+        backgroundColor: Colors.transparent,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Icon(Icons.auto_stories, size: 100, color: Colors.teal),
-            const SizedBox(height: 32),
-            const Text(
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey.shade900 : Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), blurRadius: 40, offset: const Offset(0, 10)),
+                ],
+              ),
+              child: Icon(Icons.import_contacts_rounded, size: 80, color: colorScheme.primary),
+            ),
+            const SizedBox(height: 16),
+            Text(
               'Ayo Mulai Membaca!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Pilih sumber buku atau teks untuk dibaca hari ini',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: isDark ? Colors.white70 : Colors.black54),
             ),
             const SizedBox(height: 48),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.camera_alt, size: 32),
-              label: const Text('Scan Buku', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 4,
-              ),
-              onPressed: () {
+            GlassCard(
+              isPrimary: true,
+              onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const ScanBukuScreen()),
                 );
               },
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              icon: const Icon(Icons.image, size: 28),
-              label: const Text('Upload Dokumen', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                foregroundColor: Colors.teal,
-                side: const BorderSide(color: Colors.teal, width: 2),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.document_scanner_rounded, size: 32, color: Colors.white),
+                  ),
+                  const SizedBox(width: 20),
+                  const Expanded(
+                    child: Text(
+                      'Scan Buku',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios, color: Colors.white70),
+                ],
               ),
-              onPressed: () => _pickImageAndExtractText(context),
             ),
+            const SizedBox(height: 20),
+            GlassCard(
+              onTap: () => _pickImageAndExtractText(context),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withOpacity(isDark ? 0.2 : 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(Icons.photo_library_rounded, size: 32, color: colorScheme.primary),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Text(
+                      'Upload Dokumen',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_ios, color: isDark ? Colors.white54 : Colors.black26),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
           ],
         ),
       ),

@@ -77,6 +77,9 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
   }
 
   void _promptForTitleAndSave(Set<String> existingWordsSet) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     String defaultTitle = "Pemindaian ${DateTime.now().day.toString().padLeft(2, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().year}";
     TextEditingController controller = TextEditingController();
 
@@ -101,10 +104,10 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                 _saveToHistory(defaultTitle, existingWordsSet);
                 Navigator.pop(context);
               },
-              child: const Text('Lewati', style: TextStyle(color: Colors.grey)),
+              child: Text('Lewati', style: TextStyle(color: isDark ? Colors.white54 : Colors.grey)),
             ),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.primary, foregroundColor: Colors.white),
               onPressed: () {
                 String title = controller.text.trim();
                 if (title.isEmpty) title = defaultTitle;
@@ -297,6 +300,8 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
   }
 
   void _showNewWordsBottomSheet() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -337,21 +342,14 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                           child: Ink(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                             decoration: BoxDecoration(
-                              color: Colors.blue.shade50,
+                              color: colorScheme.primaryContainer.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.withOpacity(0.15),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                )
-                              ],
-                              border: Border.all(color: Colors.blue.shade200, width: 1.5),
+                              border: Border.all(color: colorScheme.primary.withOpacity(0.5), width: 1.5),
                             ),
                             child: Text(
                               word,
                               style: TextStyle(
-                                color: Colors.blue.shade900,
+                                color: colorScheme.onPrimaryContainer,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
@@ -434,6 +432,9 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     // 0.5 == 1.0x. Jadi displayMultiplier = value * 2
     String speedLabel = "${(_speechRate * 2).toStringAsFixed(1)}x";
 
@@ -443,8 +444,8 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
           'Hasil Konversi',
           style: TextStyle(fontFamily: 'Lexend', fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
         centerTitle: true,
         actions: [
@@ -454,32 +455,32 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
           ),
         ],
       ),
-      backgroundColor: const Color(0xFFF4F4F9),
+      backgroundColor: colorScheme.surfaceVariant,
       bottomNavigationBar: _newWords.isNotEmpty
           ? Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                border: Border(top: BorderSide(color: Colors.blue.shade200, width: 1)),
+                color: colorScheme.primaryContainer.withOpacity(0.3),
+                border: Border(top: BorderSide(color: colorScheme.primary.withOpacity(0.2), width: 1)),
               ),
               child: SafeArea(
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, color: Colors.blue),
+                    Icon(Icons.info_outline, color: colorScheme.primary),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         "Ada ${_newWords.length} kata yang bisa dipelajari dari gambar ini",
-                        style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.blue),
+                        style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.primary),
                       ),
                     ),
                     TextButton(
                       onPressed: _showNewWordsBottomSheet,
                       style: TextButton.styleFrom(
-                        backgroundColor: Colors.blue.shade100,
+                        backgroundColor: colorScheme.primary.withOpacity(0.1),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text("Lihat kata ->", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                      child: Text("Lihat kata ->", style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary)),
                     )
                   ],
                 ),
@@ -504,7 +505,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                           Container(
                             width: double.infinity,
                             constraints: const BoxConstraints(maxHeight: 250),
-                            color: Colors.grey.shade300,
+                            color: colorScheme.outline,
                             child: RotatedBox(
                               quarterTurns: widget.initialRotation,
                               child: Image.file(
@@ -529,13 +530,13 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                   ),
                   const SizedBox(height: 24),
                 ],
-                const Text(
+                Text(
                   'Teks Ramah Disleksia',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     fontFamily: 'Lexend',
-                    color: Colors.black87,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -556,7 +557,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: const [
                   BoxShadow(
@@ -565,7 +566,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                     offset: Offset(0, 4),
                   )
                 ],
-                border: Border.all(color: Colors.teal.shade100, width: 2),
+                border: Border.all(color: colorScheme.primary.withOpacity(isDark ? 0.3 : 0.2), width: 2),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -573,17 +574,17 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                   // Speed Slider
                   Row(
                     children: [
-                      const Icon(Icons.speed, color: Colors.teal, size: 20),
+                      Icon(Icons.speed_rounded, color: colorScheme.primary, size: 20),
                       const SizedBox(width: 8),
-                      Text(speedLabel, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                      Text(speedLabel, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.primary)),
                       Expanded(
                         child: Slider(
                           value: _speechRate,
                           min: 0.25, // 0.5x
                           max: 0.75, // 1.5x
                           divisions: 4, // 0.25, 0.375, 0.5, 0.625, 0.75
-                          activeColor: Colors.teal,
-                          inactiveColor: Colors.teal.shade100,
+                          activeColor: colorScheme.primary,
+                          inactiveColor: colorScheme.primary.withOpacity(0.2),
                           onChanged: _onSpeedChanged,
                         ),
                       ),
@@ -596,23 +597,23 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                     children: [
                       IconButton(
                         iconSize: 32,
-                        color: Colors.teal,
+                        color: colorScheme.primary,
                         icon: const Icon(Icons.skip_previous_rounded),
                         onPressed: _prevWord,
                       ),
                       CircleAvatar(
                         radius: 28,
-                        backgroundColor: Colors.teal,
+                        backgroundColor: colorScheme.primary,
                         child: IconButton(
                           iconSize: 32,
-                          color: Colors.white,
-                          icon: Icon(_isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                          color: colorScheme.onPrimary,
+                          icon: Icon(_isPlaying ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded),
                           onPressed: _togglePlayPause,
                         ),
                       ),
                       IconButton(
                         iconSize: 32,
-                        color: Colors.teal,
+                        color: colorScheme.primary,
                         icon: const Icon(Icons.skip_next_rounded),
                         onPressed: _nextWord,
                       ),

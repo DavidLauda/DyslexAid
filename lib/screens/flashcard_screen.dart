@@ -3,6 +3,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import '../services/vocab_service.dart';
 import '../services/vocab_stats_service.dart';
+import '../widgets/glass_ui.dart';
 
 class FlashcardScreen extends StatefulWidget {
   final List<String> prioritizedWords;
@@ -69,28 +70,58 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final progress = (_currentIndex) / widget.prioritizedWords.length;
+
     if (_currentIndex >= widget.prioritizedWords.length) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Latihan Selesai')),
-        backgroundColor: const Color(0xFFF4F4F9),
+        backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF4F4F9),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.celebration, size: 100, color: Colors.orange),
-              const SizedBox(height: 24),
-              const Text('Hebat! Kamu sudah menyelesaikan sesi ini.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey.shade900 : Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: colorScheme.primary.withOpacity(0.3), blurRadius: 40, spreadRadius: 10),
+                  ],
                 ),
-                icon: const Icon(Icons.arrow_back),
-                label: const Text('Kembali ke Kamus', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                onPressed: () => Navigator.pop(context),
+                child: Icon(Icons.emoji_events_rounded, size: 100, color: colorScheme.primary),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                "Luar Biasa!",
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: isDark ? Colors.white : Colors.black87),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  "Kamu telah menyelesaikan sesi latihan kosakata hari ini. Teruslah berlatih untuk memperbanyak perbendaharaan katamu!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: isDark ? Colors.white70 : Colors.black54, height: 1.5),
+                ),
+              ),
+              const SizedBox(height: 48),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _currentIndex = 0;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 8,
+                  shadowColor: colorScheme.primary.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                ),
+                child: const Text("Ulangi Latihan", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               )
             ],
           ),
@@ -100,16 +131,24 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 
     String word = widget.prioritizedWords[_currentIndex];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F9),
+    return GlassBackground(
       appBar: AppBar(
-        title: Text('Kartu ${_currentIndex + 1} dari ${widget.prioritizedWords.length}', style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
+        title: Text('Kartu ${_currentIndex + 1} dari ${widget.prioritizedWords.length}'),
+        backgroundColor: Colors.transparent,
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 12,
+                borderRadius: BorderRadius.circular(6),
+                backgroundColor: isDark ? Colors.grey.shade800 : Colors.white.withOpacity(0.5),
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              ),
+            ),
             Expanded(
               child: Center(
                 child: Padding(
@@ -119,10 +158,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                     direction: _isFlipped ? DismissDirection.horizontal : DismissDirection.none,
                     onDismissed: (direction) {
                       if (direction == DismissDirection.startToEnd) {
-                        // Swipe Right = Hafal
                         _nextCard(true);
                       } else {
-                        // Swipe Left = Sulit
                         _nextCard(false);
                       }
                     },
@@ -130,26 +167,26 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                       decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(24)),
                       alignment: Alignment.centerLeft,
                       padding: const EdgeInsets.only(left: 24),
-                      child: const Icon(Icons.check, color: Colors.white, size: 48),
+                      child: const Icon(Icons.check_rounded, color: Colors.white, size: 48),
                     ),
                     secondaryBackground: Container(
                       decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(24)),
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 24),
-                      child: const Icon(Icons.close, color: Colors.white, size: 48),
+                      child: const Icon(Icons.close_rounded, color: Colors.white, size: 48),
                     ),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       width: double.infinity,
                       constraints: const BoxConstraints(maxWidth: 400),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
+                        color: isDark ? Colors.grey.shade800 : Colors.white,
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 20,
-                            offset: Offset(0, 8),
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 40,
+                            offset: const Offset(0, 15),
                           ),
                         ],
                       ),
@@ -163,9 +200,10 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                             Text(
                               word,
                               textAlign: TextAlign.center,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 48,
                                 fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontFamily: 'OpenDyslexic',
                                 fontFamilyFallback: ['Lexend'],
                               ),
@@ -173,8 +211,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                             const SizedBox(height: 24),
                             IconButton(
                               iconSize: 56,
-                              color: Colors.blue,
-                              icon: const Icon(Icons.volume_up),
+                              color: colorScheme.primary,
+                              icon: const Icon(Icons.volume_up_rounded),
                               onPressed: () => _speak(word),
                             ),
                             const SizedBox(height: 32),
@@ -184,22 +222,22 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                               Text(
                                 _currentMeaning ?? "Arti tidak ditemukan",
                                 textAlign: TextAlign.center,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
-                                  color: Colors.black87,
+                                  color: isDark ? Colors.white70 : Colors.black87,
                                   height: 1.5,
                                 ),
                               ),
                             ] else ...[
                               ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.teal.shade50,
-                                  foregroundColor: Colors.teal,
+                                  backgroundColor: colorScheme.primary.withOpacity(0.1),
+                                  foregroundColor: colorScheme.primary,
                                   elevation: 0,
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 ),
-                                icon: const Icon(Icons.visibility),
+                                icon: const Icon(Icons.visibility_rounded),
                                 label: const Text('Tampilkan Arti', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                                 onPressed: () => setState(() => _isFlipped = true),
                               ),
@@ -229,7 +267,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           elevation: 0,
                         ),
-                        icon: const Icon(Icons.close),
+                        icon: const Icon(Icons.close_rounded),
                         label: const Text('Masih Sulit', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         onPressed: () => _nextCard(false),
                       ),
@@ -243,7 +281,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
-                        icon: const Icon(Icons.check),
+                        icon: const Icon(Icons.check_rounded),
                         label: const Text('Sudah Hafal', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         onPressed: () => _nextCard(true),
                       ),
