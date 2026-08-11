@@ -20,6 +20,9 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
   bool _isProcessing = false;
   bool _isFlashOn = false;
   
+  List<String> _scannedTexts = [];
+  String? _firstImagePath;
+  
   Offset? _focusPoint;
   Timer? _focusTimer;
   
@@ -163,14 +166,16 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
       ocrService.dispose();
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConversionResultScreen(
-              imagePath: image.path,
-              recognizedText: text,
-              initialRotation: -_iconTurns,
-            ),
+        setState(() {
+          _scannedTexts.add(text);
+          _firstImagePath ??= image.path;
+          _isProcessing = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Halaman ${_scannedTexts.length} berhasil dipindai!'),
+            duration: const Duration(seconds: 2),
+            backgroundColor: Colors.teal,
           ),
         );
       }
@@ -179,6 +184,23 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
         _isProcessing = false;
       });
     }
+  }
+
+  void _finishScanning() {
+    if (_scannedTexts.isEmpty) return;
+
+    String combinedText = _scannedTexts.join('\n\n');
+    
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ConversionResultScreen(
+          imagePath: _firstImagePath,
+          recognizedText: combinedText,
+          initialRotation: -_iconTurns,
+        ),
+      ),
+    );
   }
 
   @override
@@ -296,6 +318,18 @@ class _ScanBukuScreenState extends State<ScanBukuScreen> {
                     ),
               ),
             ),
+
+            if (_scannedTexts.isNotEmpty && !_isProcessing)
+              Positioned(
+                bottom: 150,
+                right: 24,
+                child: FloatingActionButton.extended(
+                  onPressed: _finishScanning,
+                  backgroundColor: Colors.teal,
+                  icon: const Icon(Icons.check, color: Colors.white),
+                  label: Text('Selesai (${_scannedTexts.length})', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
 
             Positioned(
               top: 50,
