@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import '../models/reading_history.dart';
 import '../services/vocab_service.dart';
 import '../widgets/dyslexia_friendly_text.dart';
+import '../widgets/text_settings_sheet.dart';
 import '../widgets/detail_kata_overlay.dart';
 
 class WordBoundary {
@@ -149,6 +150,20 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
     }).toList();
   }
 
+  void _showSettingsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: const TextSettingsSheet(),
+      ),
+    );
+  }
+
   void _initTts() {
     _flutterTts.setLanguage("id-ID");
     _flutterTts.setSpeechRate(_speechRate);
@@ -225,6 +240,20 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
     if (_isPlaying) {
       _pause();
     } else {
+      _playFromCurrent();
+    }
+  }
+
+  Future<void> _playFromWordIndex(int index) async {
+    await _pause();
+    if (index >= 0 && index < _boundaries.length) {
+      _currentBoundaryIndex = index;
+      if (mounted) {
+        setState(() {
+          _highlightedWordIndex = index;
+        });
+        _highlightNotifier.value = index;
+      }
       _playFromCurrent();
     }
   }
@@ -418,6 +447,12 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _showSettingsSheet,
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF4F4F9),
       bottomNavigationBar: _newWords.isNotEmpty
@@ -507,6 +542,7 @@ class _ConversionResultScreenState extends State<ConversionResultScreen> {
                 DyslexiaFriendlyText(
                   text: widget.recognizedText,
                   highlightedWordIndex: _highlightedWordIndex,
+                  onWordTapped: _playFromWordIndex,
                 ),
               ],
             ),

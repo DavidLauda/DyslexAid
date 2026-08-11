@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../utils/syllable_util.dart';
+import '../services/settings_provider.dart';
 
 class DyslexiaFriendlyText extends StatelessWidget {
   final String text;
   final int? highlightedWordIndex;
+  final ValueChanged<int>? onWordTapped;
 
   const DyslexiaFriendlyText({
     super.key,
     required this.text,
     this.highlightedWordIndex,
+    this.onWordTapped,
   });
 
   @override
   Widget build(BuildContext context) {
+    final settings = Provider.of<SettingsProvider>(context);
+
     // Split by whitespace to get words
     final RegExp wordSplitter = RegExp(r'\s+');
     final List<String> words =
@@ -22,7 +28,7 @@ class DyslexiaFriendlyText extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFFDFBF7), // Soft cream
+        color: settings.getThemeColor(), 
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -33,8 +39,8 @@ class DyslexiaFriendlyText extends StatelessWidget {
         ],
       ),
       child: Wrap(
-        spacing: 8.0,
-        runSpacing: 16.0, // Wider line height effect for Wrap
+        spacing: settings.wordSpacing,
+        runSpacing: settings.fontSize * settings.lineSpacing * 0.5, 
         children: List.generate(words.length, (index) {
           final word = words[index];
           final syllables = SyllableUtil.pemenggalSukuKata(word);
@@ -83,22 +89,30 @@ class DyslexiaFriendlyText extends StatelessWidget {
 
           final isHighlighted = highlightedWordIndex == index;
 
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            decoration: isHighlighted
-                ? BoxDecoration(
-                    color: Colors.yellow.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(4),
-                  )
-                : null,
-            child: Text.rich(
-              TextSpan(children: spans),
-              style: const TextStyle(
-                fontFamily: 'OpenDyslexic',
-                fontFamilyFallback: ['Lexend'],
-                fontSize: 20, // slightly larger for readability
-                height: 1.8, // 1.8 - 2.0 line height
-                letterSpacing: 1.5, // widened letter spacing
+          return GestureDetector(
+            onTap: () {
+              if (onWordTapped != null) {
+                onWordTapped!(index);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              decoration: isHighlighted
+                  ? BoxDecoration(
+                      color: settings.getHighlightColor(),
+                      borderRadius: BorderRadius.circular(4),
+                    )
+                  : null,
+              child: Text.rich(
+                TextSpan(children: spans),
+                style: TextStyle(
+                  fontFamily: settings.fontFamily,
+                  fontFamilyFallback: const ['Lexend'],
+                  fontSize: settings.fontSize, 
+                  height: settings.lineSpacing, 
+                  letterSpacing: settings.letterSpacing, 
+                  color: settings.getTextColor(),
+                ),
               ),
             ),
           );

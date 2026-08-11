@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import '../services/vocab_service.dart';
+import '../services/vocab_stats_service.dart';
 import '../utils/syllable_util.dart';
 
 class DetailKataOverlay extends StatefulWidget {
@@ -11,6 +12,9 @@ class DetailKataOverlay extends StatefulWidget {
 
   /// Fungsi helper untuk memanggil overlay ini dari mana saja
   static void show(BuildContext context, String kata) {
+    // Tingkatkan skor kata karena pengguna melihat artinya
+    VocabStatsService.incrementScore(kata);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

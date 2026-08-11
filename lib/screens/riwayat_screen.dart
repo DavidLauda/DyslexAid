@@ -4,9 +4,24 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/reading_history.dart';
 import 'conversion_result_screen.dart';
 import 'scan_buku_screen.dart';
+import '../widgets/text_settings_sheet.dart';
 
 class RiwayatScreen extends StatelessWidget {
   const RiwayatScreen({super.key});
+
+  void _showSettingsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: const TextSettingsSheet(),
+      ),
+    );
+  }
 
   void _editTitle(BuildContext context, ReadingHistory history) {
     String defaultTitle = "Pemindaian ${_formatDate(history.tanggalScan)}";
@@ -77,9 +92,15 @@ class RiwayatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Riwayat Membaca', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend')),
+        title: const Text('Riwayat', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend')),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _showSettingsSheet(context),
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF4F4F9),
       body: ValueListenableBuilder(

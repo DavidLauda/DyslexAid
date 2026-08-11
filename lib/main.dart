@@ -5,9 +5,11 @@ import 'models/reading_history.dart';
 import 'screens/beranda_screen.dart';
 import 'screens/kamus_kata_screen.dart';
 import 'screens/riwayat_screen.dart';
+import 'screens/latihan_screen.dart';
 
 import 'package:provider/provider.dart';
 import 'services/vocab_service.dart';
+import 'services/settings_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +19,8 @@ void main() async {
   Hive.registerAdapter(ReadingHistoryAdapter());
   await Hive.openBox<ReadingHistory>('reading_history_box');
   await Hive.openBox<List<String>>('global_box');
+  await Hive.openBox('settings_box');
+  await Hive.openBox<int>('vocab_stats_box');
 
   final vocabService = VocabService();
   try {
@@ -31,8 +35,11 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]).then((_) {
     runApp(
-      Provider<VocabService>.value(
-        value: vocabService,
+      MultiProvider(
+        providers: [
+          Provider<VocabService>.value(value: vocabService),
+          ChangeNotifierProvider<SettingsProvider>(create: (_) => SettingsProvider()),
+        ],
         child: const DyslexAidApp(),
       ),
     );
@@ -69,6 +76,7 @@ class _MainNavigatorState extends State<MainNavigator> {
     const KamusKataScreen(),
     const BerandaScreen(),
     const RiwayatScreen(),
+    const LatihanScreen(),
   ];
 
   @override
@@ -95,7 +103,12 @@ class _MainNavigatorState extends State<MainNavigator> {
             icon: Icon(Icons.history),
             label: 'Riwayat',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.sports_esports),
+            label: 'Latihan',
+          ),
         ],
+        type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.teal,
         unselectedItemColor: Colors.grey,
       ),

@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import '../services/vocab_service.dart';
 import '../widgets/detail_kata_overlay.dart';
+import '../widgets/text_settings_sheet.dart';
 import 'scan_buku_screen.dart';
 
 class KamusKataScreen extends StatefulWidget {
@@ -45,6 +46,20 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
     return words.skip(startIndex).take(_itemsPerPage).toList();
   }
 
+  void _showSettingsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: const TextSettingsSheet(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final vocabService = Provider.of<VocabService>(context, listen: false);
@@ -55,6 +70,12 @@ class _KamusKataScreenState extends State<KamusKataScreen> {
         title: const Text('Kamus Kata', style: TextStyle(fontWeight: FontWeight.bold, fontFamily: 'Lexend')),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _showSettingsSheet,
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFF4F4F9),
       body: ValueListenableBuilder(

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import '../services/ocr_service.dart';
 import 'scan_buku_screen.dart';
 import 'conversion_result_screen.dart';
+import '../widgets/text_settings_sheet.dart';
 
 class BerandaScreen extends StatelessWidget {
   const BerandaScreen({super.key});
@@ -60,6 +61,24 @@ class BerandaScreen extends StatelessWidget {
         title: const Text('Beranda', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: const TextSettingsSheet(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
